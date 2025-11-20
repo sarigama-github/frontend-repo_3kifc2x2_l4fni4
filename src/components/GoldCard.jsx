@@ -1,22 +1,24 @@
 import React from 'react'
 import NeumorphicCard from './NeumorphicCard'
+import Spline from '@splinetool/react-spline'
 
 function GoldCard({ item, onAdd }) {
-  const { name, type, purity, weight_grams, price_usd, image, badge } = item
+  const { name, type, purity, weight_grams, price_usd, image, badge, three_d_url } = item
 
   return (
     <NeumorphicCard className="overflow-hidden">
-      <div className="flex items-center gap-6">
-        <div className="relative w-28 h-28 shrink-0">
-          {/* Gold gradient circle */}
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-yellow-300 via-amber-300 to-yellow-500" />
-          {/* Inner inset to simulate 3D */}
-          <div className="absolute inset-1 rounded-2xl bg-gradient-to-br from-[#2a2314] to-[#4a3a1a] border border-amber-300/30 shadow-inner" />
-          {/* Icon/emoji fallback */}
-          <div className="absolute inset-0 grid place-items-center text-4xl">
-            {type === 'bar' ? '🧱' : '🪨'}
-          </div>
+      <div className="flex flex-col gap-4">
+        <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border border-amber-300/20">
+          {three_d_url ? (
+            <Spline scene={three_d_url} />
+          ) : (
+            <div className="absolute inset-0 grid place-items-center text-6xl">
+              {type === 'bar' ? '🧱' : '🪨'}
+            </div>
+          )}
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/30" />
         </div>
+
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <h3 className="text-xl font-semibold text-amber-200">{name}</h3>

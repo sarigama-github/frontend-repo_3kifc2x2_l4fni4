@@ -1,6 +1,6 @@
 import React from 'react'
 
-function Header() {
+function Header({ cartCount = 0, onCartClick }) {
   return (
     <header className="relative z-10 flex items-center justify-between py-6">
       <div className="flex items-center gap-3">
@@ -14,8 +14,12 @@ function Header() {
         <a href="#contact" className="hover:text-amber-300">Contact</a>
       </nav>
 
-      <button className="px-4 py-2 rounded-xl bg-white/5 text-amber-100 border border-white/10 hover:bg-white/10 transition">
-        Cart
+      <button
+        onClick={onCartClick}
+        className="px-4 py-2 rounded-xl bg-white/5 text-amber-100 border border-white/10 hover:bg-white/10 transition flex items-center gap-2"
+      >
+        <span>Cart</span>
+        <span className="px-2 py-0.5 rounded-md bg-amber-400 text-black text-sm font-semibold">{cartCount}</span>
       </button>
     </header>
   )

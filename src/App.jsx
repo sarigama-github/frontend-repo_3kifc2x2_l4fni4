@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import Header from './components/Header'
 import GoldCard from './components/GoldCard'
 import NeumorphicCard from './components/NeumorphicCard'
+import CartSheet from './components/CartSheet'
 import Spline from '@splinetool/react-spline'
 
 function App() {
@@ -9,6 +10,7 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [cart, setCart] = useState([])
+  const [cartOpen, setCartOpen] = useState(false)
 
   const backend = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
 
@@ -72,7 +74,38 @@ function App() {
     })
   }
 
-  const total = cart.reduce((sum, i) => sum + i.price_usd * i.qty, 0)
+  const updateQty = (item, qty) => {
+    setCart((prev) => {
+      if (qty <= 0) return prev.filter((p) => p.name !== item.name)
+      return prev.map((p) => (p.name === item.name ? { ...p, qty } : p))
+    })
+  }
+
+  const total = useMemo(() => cart.reduce((sum, i) => sum + i.price_usd * i.qty, 0), [cart])
+
+  const handleCheckout = async (customer) => {
+    if (!customer.name || !customer.email || !customer.address) return alert('Please fill out all fields.')
+    const payload = {
+      customer_name: customer.name,
+      customer_email: customer.email,
+      shipping_address: customer.address,
+      items: cart.map((c) => ({ item_id: c.id || c.name, quantity: c.qty })),
+    }
+    try {
+      const res = await fetch(`${backend}/api/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) throw new Error('Failed to place order')
+      const data = await res.json()
+      alert('Order placed! ID: ' + data.id)
+      setCart([])
+      setCartOpen(false)
+    } catch (e) {
+      alert(e.message)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#0e1123] relative overflow-hidden">
@@ -81,7 +114,7 @@ function App() {
       <div className="absolute -bottom-48 -left-24 w-[40rem] h-[40rem] bg-yellow-400/10 blur-3xl rounded-full" />
 
       <div className="container mx-auto px-6">
-        <Header />
+        <Header cartCount={cart.length} onCartClick={() => setCartOpen(true)} />
 
         {/* Hero with 3D gold */}
         <section className="grid md:grid-cols-2 gap-10 items-center pt-8">
@@ -148,6 +181,14 @@ function App() {
           </div>
         </section>
       </div>
+
+      <CartSheet
+        open={cartOpen}
+        onClose={() => setCartOpen(false)}
+        items={cart}
+        onUpdateQty={updateQty}
+        onCheckout={handleCheckout}
+      />
     </div>
   )
 }
